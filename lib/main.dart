@@ -17,7 +17,9 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   final _toDoController = TextEditingController();
-  List _toDoList = [];
+  List _toDoList1 = [];
+  List _toDoList2 = [];
+  List _toDoList3 = [];
 
   Map<String, dynamic> _lastRemoved;
   int _lastRemovedPos;
@@ -26,30 +28,40 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
 
-    _readData().then((data) {
+    _readData("1").then((data) {
       setState(() {
-        _toDoList = json.decode(data);
+        _toDoList1 = json.decode(data);
+      });
+    });
+    _readData("2").then((data) {
+      setState(() {
+        _toDoList2 = json.decode(data);
+      });
+    });
+    _readData("3").then((data) {
+      setState(() {
+        _toDoList3 = json.decode(data);
       });
     });
   }
 
-  void _addToDo() {
+  void _addToDo(List lista) {
     setState(() {
       Map<String, dynamic> newToDo = Map();
       newToDo["title"] = _toDoController.text;
       _toDoController.text = "";
 
       newToDo["ok"] = false;
-      _toDoList.add(newToDo);
-      _saveData();
+      lista.add(newToDo);
+      _saveData(lista);
     });
   }
 
-  Future<Null> _refresh() async {
+  Future<Null> _refresh(List lista) async {
     await Future.delayed(Duration(seconds: 1));
 
     setState(() {
-      _toDoList.sort((a, b) {
+      lista.sort((a, b) {
         if (a["ok"] && !b["ok"])
           return 1;
         else if (!a["ok"] && b["ok"])
@@ -58,7 +70,7 @@ class _HomeState extends State<Home> {
           return 0;
       });
 
-      _saveData();
+      _saveData(lista);
     });
 
     return null;
@@ -66,13 +78,9 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Lista de Tarefas"),
-        backgroundColor: Colors.blueAccent,
-        centerTitle: true,
-      ),
-      body: Column(
+    final _kTabPages = <Widget>[
+      //Tab 1
+      Column(
         children: <Widget>[
           Container(
             padding: EdgeInsets.fromLTRB(17.0, 1.0, 7.0, 1.0),
@@ -82,7 +90,7 @@ class _HomeState extends State<Home> {
                   child: TextField(
                     controller: _toDoController,
                     decoration: InputDecoration(
-                        labelText: "Nova Tarefa",
+                        labelText: "Nova Atividade",
                         labelStyle: TextStyle(color: Colors.blueAccent)),
                   ),
                 ),
@@ -90,26 +98,120 @@ class _HomeState extends State<Home> {
                   color: Colors.blueAccent,
                   child: Text("ADD"),
                   textColor: Colors.white,
-                  onPressed: _addToDo,
+                  onPressed: () => _addToDo(_toDoList1),
                 ),
               ],
             ),
           ),
           Expanded(
               child: RefreshIndicator(
-            onRefresh: _refresh,
+            onRefresh: () => _refresh(_toDoList1),
             child: ListView.builder(
                 padding: EdgeInsets.only(top: 10.0),
-                itemCount: _toDoList.length,
-                itemBuilder: buildItem),
+                itemCount: _toDoList1.length,
+                itemBuilder: (context, index) =>
+                    buildItem(context, index, _toDoList1)),
           ))
         ],
+      ),
+
+      //tab2
+
+      Column(
+        children: <Widget>[
+          Container(
+            padding: EdgeInsets.fromLTRB(17.0, 1.0, 7.0, 1.0),
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: TextField(
+                    controller: _toDoController,
+                    decoration: InputDecoration(
+                        labelText: "Nova Compra",
+                        labelStyle: TextStyle(color: Colors.blueAccent)),
+                  ),
+                ),
+                RaisedButton(
+                  color: Colors.blueAccent,
+                  child: Text("ADD"),
+                  textColor: Colors.white,
+                  onPressed: () => _addToDo(_toDoList2),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+              child: RefreshIndicator(
+            onRefresh: () => _refresh(_toDoList2),
+            child: ListView.builder(
+                padding: EdgeInsets.only(top: 10.0),
+                itemCount: _toDoList2.length,
+                itemBuilder: (context, index) =>
+                    buildItem(context, index, _toDoList2)),
+          ))
+        ],
+      ),
+      Column(
+        children: <Widget>[
+          Container(
+            padding: EdgeInsets.fromLTRB(17.0, 1.0, 7.0, 1.0),
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: TextField(
+                    controller: _toDoController,
+                    decoration: InputDecoration(
+                        labelText: "Nova Matéria",
+                        labelStyle: TextStyle(color: Colors.blueAccent)),
+                  ),
+                ),
+                RaisedButton(
+                  color: Colors.blueAccent,
+                  child: Text("ADD"),
+                  textColor: Colors.white,
+                  onPressed: () => _addToDo(_toDoList3),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+              child: RefreshIndicator(
+            onRefresh: () => _refresh(_toDoList3),
+            child: ListView.builder(
+                padding: EdgeInsets.only(top: 10.0),
+                itemCount: _toDoList3.length,
+                itemBuilder: (context, index) =>
+                    buildItem(context, index, _toDoList3)),
+          ))
+        ],
+      ),
+    ];
+    final _kTabs = <Tab>[
+      const Tab(icon: Icon(Icons.list_alt), text: 'Atividades'),
+      const Tab(icon: Icon(Icons.shopping_cart), text: 'Compras'),
+      const Tab(icon: Icon(Icons.book), text: 'Matérias'),
+    ];
+
+    return DefaultTabController(
+      length: _kTabs.length,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("Lista de Tarefas"),
+          backgroundColor: Colors.blueAccent,
+          centerTitle: true,
+          bottom: TabBar(
+            tabs: _kTabs,
+          ),
+        ),
+        body: TabBarView(
+          children: _kTabPages,
+        ),
       ),
     );
   }
 
   //faz a lista
-  Widget buildItem(BuildContext context, int index) {
+  Widget buildItem(BuildContext context, int index, List lista) {
     return Dismissible(
       key: Key(DateTime.now().microsecondsSinceEpoch.toString()),
       background: Container(
@@ -120,25 +222,25 @@ class _HomeState extends State<Home> {
           )),
       direction: DismissDirection.startToEnd,
       child: CheckboxListTile(
-        title: Text(_toDoList[index]["title"]),
-        value: _toDoList[index]["ok"],
+        title: Text(lista[index]["title"]),
+        value: lista[index]["ok"],
         secondary: CircleAvatar(
-          child: Icon(_toDoList[index]["ok"] ? Icons.check : Icons.error),
+          child: Icon(lista[index]["ok"] ? Icons.check : Icons.error),
         ),
         onChanged: (c) {
           setState(() {
-            _toDoList[index]["ok"] = c;
-            _saveData();
+            lista[index]["ok"] = c;
+            _saveData(lista);
           });
         },
       ),
       onDismissed: (direction) {
         setState(() {
-          _lastRemoved = Map.from(_toDoList[index]);
+          _lastRemoved = Map.from(lista[index]);
           _lastRemovedPos = index;
-          _toDoList.removeAt(index);
+          lista.removeAt(index);
 
-          _saveData();
+          _saveData(lista);
 
           final snack = SnackBar(
             content: Text("Tarefa \"${_lastRemoved["title"]}\" removida!"),
@@ -146,8 +248,8 @@ class _HomeState extends State<Home> {
               label: "Desfazer",
               onPressed: () {
                 setState(() {
-                  _toDoList.insert(_lastRemovedPos, _lastRemoved);
-                  _saveData();
+                  lista.insert(_lastRemovedPos, _lastRemoved);
+                  _saveData(lista);
                 });
               },
             ),
@@ -160,20 +262,29 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Future<File> _getFile() async {
+  Future<File> _getFile(String s) async {
     final directory = await getApplicationDocumentsDirectory();
-    return File("${directory.path}/data.json");
+    return File("${directory.path}/data$s.json");
   }
 
-  Future<File> _saveData() async {
-    String data = json.encode(_toDoList);
-    final file = await _getFile();
+  Future<File> _saveData(List lista) async {
+    String data = json.encode(lista);
+    String s;
+    if (lista == _toDoList1) {
+      s = "1";
+    } else if (lista == _toDoList2) {
+      s = "2";
+    } else if (lista == _toDoList3) {
+      s = "3";
+    }
+
+    final file = await _getFile(s);
     return file.writeAsString(data);
   }
 
-  Future<String> _readData() async {
+  Future<String> _readData(String s) async {
     try {
-      final file = await _getFile();
+      final file = await _getFile(s);
       return file.readAsString();
     } catch (e) {
       return null;
