@@ -189,7 +189,7 @@ class _HomeState extends State<Home> {
     final _kTabs = <Tab>[
       const Tab(icon: Icon(Icons.list_alt), text: 'Atividades'),
       const Tab(icon: Icon(Icons.shopping_cart), text: 'Compras'),
-      const Tab(icon: Icon(Icons.book), text: 'Matérias'),
+      const Tab(icon: Icon(Icons.book), text: 'Estudos'),
     ];
 
     return DefaultTabController(
